@@ -1,26 +1,25 @@
-import mongoose from "mongoose";
-
-const { Schema, model, models } = mongoose;
+import { Schema, model } from "mongoose";
+import { GENDERS, SIZES } from "../constants/goods.js";
 
 const goodSchema = new Schema(
   {
-    title: { type: String, required: true },
+    name: { type: String, required: true, trim: true },
+    category: { type: Schema.Types.ObjectId, ref: "category", required: true },
+    image: { type: String, required: true },
+    price: {
+      value: { type: Number, required: true, min: 0 },
+      currency: { type: String, default: "грн" },
+    },
+    size: [{ type: String, enum: SIZES }],
     description: { type: String },
-    price: { type: Number, required: true },
-    category: {
-      type: Schema.Types.ObjectId,
-      ref: "Category",
-      required: true,
-    },
-    gender: {
-      type: String,
-      enum: ["men", "women", "unisex"],
-      required: true,
-    },
-    sizes: [String],
-    images: [String],
+    prevDescription: { type: String },
+    characteristics: [{ type: String }],
+    gender: { type: String, enum: GENDERS, required: true },
+    feedbacks: [{ type: Schema.Types.ObjectId, ref: "Feedback" }],
   },
-  { timestamps: true },
+  {
+    versionKey: false,
+  },
 );
 
-export const GoodModel = models.Good || model("Good", goodSchema);
+export const GoodModel = model("good", goodSchema);
