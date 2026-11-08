@@ -1,12 +1,15 @@
+
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import "dotenv/config";
 import { errors } from "celebrate";
 import cookieParser from "cookie-parser";
+
 import { conectMongoDB } from "./db/connectToMongoDB.js";
 import { notFoundHandler } from "./middlewares/notFoundHandler.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
+
 import authRouter from "./routes/authRouter.js";
 import usersRouter from "./routes/usersRouter.js";
 import categoriesRouter from "./routes/categoriesRouter.js";
@@ -24,13 +27,13 @@ app.use(cors({ methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"] }));
 app.use(helmet());
 app.use(cookieParser());
 
-app.use('/api/auth', authRouter);
-app.use('/api/users', usersRouter);
-app.use('/api/categories', categoriesRouter);
-app.use('/api/goods', goodsRouter);
-app.use('/api/orders', ordersRouter);
-app.use('/api/feedbacks', feedbacksRouter);
-app.use('/api/subscriptions', subscriptionsRouter);
+app.use("/api/auth", authRouter);
+app.use("/api/users", usersRouter);
+app.use("/api/categories", categoriesRouter);
+app.use("/api/goods", goodsRouter);
+app.use("/api/orders", ordersRouter);
+app.use("/api/feedbacks", feedbacksRouter);
+app.use("/api/subscriptions", subscriptionsRouter);
 
 app.use(notFoundHandler);
 app.use(errors());
