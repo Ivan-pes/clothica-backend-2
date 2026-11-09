@@ -2,19 +2,23 @@ import { Joi, Segments } from "celebrate";
 
 export const registerUserSchema = {
   [Segments.BODY]: Joi.object({
-    name: Joi.string().required().max(100),
+    name: Joi.string()
+      .min(3)
+      .max(32)
+      .required()
+      .pattern(/^[\p{L}0-9 ]+$/u),
     phone: Joi.string()
-      .pattern(/^\+[1-9]\d{1,14}$/)
+      .pattern(/^\+\d{12}$/)
       .required(),
 
-    password: Joi.string().min(8).required(),
+    password: Joi.string().min(8).max(128).required(),
   }),
 };
 
 export const loginUserSchema = {
   [Segments.BODY]: Joi.object({
     phone: Joi.string()
-      .pattern(/^\+[1-9]\d{1,14}$/)
+      .pattern(/^\+\d{12}$/)
       .required(),
     password: Joi.string().required(),
   }),

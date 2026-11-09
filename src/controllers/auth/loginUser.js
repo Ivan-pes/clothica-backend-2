@@ -7,7 +7,7 @@ import { createSession, setSessionCookies } from "../../services/auth.js";
 export const loginUser = async (req, res) => {
   const { phone, password } = req.body;
 
-  const user = await UserModel.findOne({ phone });
+  const user = await UserModel.findOne({ phone }).select("+password");
   if (!user) {
     throw createHttpError(401, "Invalid credentials");
   }

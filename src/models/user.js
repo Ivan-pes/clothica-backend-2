@@ -6,6 +6,8 @@ const userSchema = new Schema(
       type: String,
       trim: true,
       required: true,
+      minlength: 3,
+      maxlength: 32,
     },
 
     phone: {
@@ -16,9 +18,8 @@ const userSchema = new Schema(
     },
     password: {
       type: String,
-
       required: true,
-      minlength: 8,
+      select: false,
     },
   },
   {
