@@ -4,15 +4,16 @@ import { UserModel } from "../../models/user.js";
 import { createSession, setSessionCookies } from "../../services/auth.js";
 
 export const registerUser = async (req, res) => {
-  const { email, password } = req.body;
-  const existingUser = await UserModel.findOne({ email });
+  const { name, phone, password } = req.body;
+  const existingUser = await UserModel.findOne({ phone });
   if (existingUser) {
-    throw createHttpError(400, "Email in use");
+    throw createHttpError(400, "Phone number in use");
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
   const newUser = await UserModel.create({
-    email,
+    name,
+    phone,
     password: hashedPassword,
   });
 
