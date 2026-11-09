@@ -8,10 +8,17 @@ const cookieOptions = {
 
 export const logoutUser = async (req, res, next) => {
   try {
-    const { accessToken } = req.cookies ?? {};
+    const { accessToken, sessionId } = req.cookies ?? {};
 
-    if (accessToken) {
-      await mongoose.connection.collection('sessions').deleteOne({ accessToken });
+    // Supports both session schemes: lookup by accessToken or by the sessionId cookie.
+    const conditions = [];
+    if (accessToken) conditions.push({ accessToken });
+    if (sessionId && mongoose.isValidObjectId(sessionId)) {
+      conditions.push({ _id: new mongoose.Types.ObjectId(sessionId) });
+    }
+
+    if (conditions.length > 0) {
+      await mongoose.connection.collection('sessions').deleteMany({ $or: conditions });
     }
 
     res.clearCookie('accessToken', cookieOptions);

@@ -2,7 +2,7 @@ import { Schema, model } from 'mongoose';
 
 const userSchema = new Schema(
   {
-    name: { type: String, required: true, trim: true, minlength: 2, maxlength: 32 },
+    name: { type: String, trim: true, maxlength: 32 },
     email: {
       type: String,
       required: true,
@@ -19,6 +19,13 @@ const userSchema = new Schema(
   },
   { timestamps: true, versionKey: false },
 );
+
+// If registration does not send a name, use the part of the email before "@".
+userSchema.pre('validate', function () {
+  if (!this.name && this.email) {
+    this.name = this.email.split('@')[0].slice(0, 32);
+  }
+});
 
 userSchema.methods.toJSON = function () {
   const user = this.toObject();
