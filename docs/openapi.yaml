@@ -1,0 +1,518 @@
+openapi: 3.0.3
+info:
+  title: Clothica API
+  version: 1.0.0
+  description: REST API інтернет-магазину одягу Clothica.
+servers:
+  - url: https://clothica-backend-2.onrender.com
+    description: Production
+  - url: http://localhost:3000
+    description: Local
+tags:
+  - name: Auth
+  - name: Users
+  - name: Categories
+  - name: Goods
+  - name: Orders
+  - name: Feedbacks
+  - name: Subscriptions
+
+paths:
+  /api/auth/register:
+    post:
+      tags: [Auth]
+      summary: Реєстрація користувача
+      description: В розробці.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterRequest' }
+      responses:
+        '201':
+          description: Користувача створено, встановлено cookie сесії
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      summary: Логін користувача
+      description: В розробці.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses:
+        '200':
+          description: Успішний вхід, встановлено cookie сесії
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/auth/logout:
+    post:
+      tags: [Auth]
+      summary: Логаут користувача
+      security:
+        - cookieAuth: []
+      responses:
+        '204':
+          description: Сесію видалено, cookie очищено
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/users/current:
+    get:
+      tags: [Users]
+      summary: Інформація про поточного користувача
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Поточний користувач
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Users]
+      summary: Оновлення даних поточного користувача
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UserUpdate' }
+      responses:
+        '200':
+          description: Оновлений користувач
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/categories:
+    get:
+      tags: [Categories]
+      summary: Список категорій з пагінацією
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 1, default: 1 }
+        - in: query
+          name: perPage
+          schema: { type: integer, minimum: 1, maximum: 20, default: 6 }
+      responses:
+        '200':
+          description: Сторінка категорій
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CategoriesResponse' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+
+  /api/goods:
+    get:
+      tags: [Goods]
+      summary: Список товарів з фільтрами та пагінацією
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 1, default: 1 }
+        - in: query
+          name: perPage
+          schema: { type: integer, minimum: 1, maximum: 24, default: 12 }
+        - in: query
+          name: category
+          schema: { $ref: '#/components/schemas/ObjectId' }
+        - in: query
+          name: size
+          description: Один або кілька розмірів через кому, наприклад S,M,L
+          schema: { type: string, example: 'S,M' }
+        - in: query
+          name: minPrice
+          schema: { type: number, minimum: 0 }
+        - in: query
+          name: maxPrice
+          schema: { type: number, minimum: 0 }
+        - in: query
+          name: gender
+          schema: { type: string, enum: [women, man, unisex] }
+      responses:
+        '200':
+          description: Сторінка товарів
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GoodsResponse' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+
+  /api/goods/{goodId}:
+    get:
+      tags: [Goods]
+      summary: Товар за ID
+      description: В розробці.
+      parameters:
+        - in: path
+          name: goodId
+          required: true
+          schema: { $ref: '#/components/schemas/ObjectId' }
+      responses:
+        '200':
+          description: Товар
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Good' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/orders:
+    post:
+      tags: [Orders]
+      summary: Оформлення замовлення
+      description: В розробці.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/OrderCreate' }
+      responses:
+        '201':
+          description: Замовлення створено
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Order' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+    get:
+      tags: [Orders]
+      summary: Усі замовлення поточного користувача
+      description: В розробці.
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Список замовлень
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Order' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/orders/{orderId}/status:
+    patch:
+      tags: [Orders]
+      summary: Зміна статусу замовлення (admin)
+      description: В розробці.
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: orderId
+          required: true
+          schema: { $ref: '#/components/schemas/ObjectId' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/OrderStatusUpdate' }
+      responses:
+        '200':
+          description: Оновлене замовлення
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Order' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/feedbacks:
+    get:
+      tags: [Feedbacks]
+      summary: Список останніх відгуків
+      responses:
+        '200':
+          description: Останні 10 відгуків
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FeedbacksResponse' }
+    post:
+      tags: [Feedbacks]
+      summary: Створення відгуку
+      description: В розробці.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/FeedbackCreate' }
+      responses:
+        '201':
+          description: Відгук створено
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Feedback' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+
+  /api/subscriptions:
+    post:
+      tags: [Subscriptions]
+      summary: Підписка на розсилку
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SubscriptionCreate' }
+      responses:
+        '201':
+          description: Підписку створено
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SubscriptionResponse' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: accessToken
+
+  responses:
+    ValidationError:
+      description: Помилка валідації
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ValidationError' }
+    Unauthorized:
+      description: Користувач не авторизований
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Forbidden:
+      description: Недостатньо прав
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Не знайдено
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Conflict:
+      description: Конфлікт даних
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+  schemas:
+    ObjectId:
+      type: string
+      pattern: '^[0-9a-fA-F]{24}$'
+      example: 690c9ce6a6276289c98fc006
+
+    Pagination:
+      type: object
+      properties:
+        page: { type: integer, example: 1 }
+        perPage: { type: integer, example: 12 }
+        totalItems: { type: integer, example: 108 }
+        totalPages: { type: integer, example: 9 }
+
+    Error:
+      type: object
+      properties:
+        message: { type: string, example: User not found }
+
+    ValidationError:
+      type: object
+      properties:
+        statusCode: { type: integer, example: 400 }
+        error: { type: string, example: Bad Request }
+        message: { type: string, example: Validation failed }
+        validation: { type: object }
+
+    Category:
+      type: object
+      properties:
+        _id: { $ref: '#/components/schemas/ObjectId' }
+        name: { type: string, example: Футболки та сорочки }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    CategoriesResponse:
+      allOf:
+        - $ref: '#/components/schemas/Pagination'
+        - type: object
+          properties:
+            categories:
+              type: array
+              items: { $ref: '#/components/schemas/Category' }
+
+    Good:
+      type: object
+      properties:
+        _id: { $ref: '#/components/schemas/ObjectId' }
+        name: { type: string, example: "Шорти 'Easy Move Navy'" }
+        category: { $ref: '#/components/schemas/ObjectId' }
+        image: { type: string, format: uri, example: 'https://ftp.goit.study/img/goods/6877b9f116ae59c7b60d0197.webp' }
+        price:
+          type: object
+          properties:
+            value: { type: number, example: 999 }
+            currency: { type: string, example: грн }
+        size:
+          type: array
+          items: { type: string, enum: [XXS, XS, S, M, L, XL, XXL] }
+        description: { type: string }
+        prevDescription: { type: string }
+        characteristics:
+          type: array
+          items: { type: string }
+        gender: { type: string, enum: [women, man, unisex] }
+        feedbacks:
+          type: array
+          items: { $ref: '#/components/schemas/ObjectId' }
+
+    GoodsResponse:
+      allOf:
+        - $ref: '#/components/schemas/Pagination'
+        - type: object
+          properties:
+            goods:
+              type: array
+              items: { $ref: '#/components/schemas/Good' }
+
+    Feedback:
+      type: object
+      properties:
+        _id: { $ref: '#/components/schemas/ObjectId' }
+        author: { type: string, example: Артем }
+        description: { type: string, example: 'Крутий оверсайз, сидить як треба.' }
+        rate: { type: number, minimum: 1, maximum: 5, example: 5 }
+        category: { type: string, example: Футболки та сорочки }
+        date: { type: string, example: '2025-05-01' }
+        productId:
+          type: object
+          properties:
+            _id: { $ref: '#/components/schemas/ObjectId' }
+            name: { type: string }
+
+    FeedbacksResponse:
+      type: object
+      properties:
+        status: { type: integer, example: 200 }
+        message: { type: string, example: Successfully retrieved feedbacks }
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/Feedback' }
+
+    FeedbackCreate:
+      type: object
+      required: [author, description, rate, productId]
+      properties:
+        author: { type: string }
+        description: { type: string }
+        rate: { type: number, minimum: 1, maximum: 5 }
+        productId: { $ref: '#/components/schemas/ObjectId' }
+
+    SubscriptionCreate:
+      type: object
+      required: [email]
+      properties:
+        email: { type: string, format: email, example: user@example.com }
+
+    SubscriptionResponse:
+      type: object
+      properties:
+        status: { type: integer, example: 201 }
+        message: { type: string, example: Ви успішно підписалися! }
+        data:
+          type: object
+          properties:
+            _id: { $ref: '#/components/schemas/ObjectId' }
+            email: { type: string, example: user@example.com }
+
+    User:
+      type: object
+      properties:
+        _id: { $ref: '#/components/schemas/ObjectId' }
+        name: { type: string, example: Іван }
+        email: { type: string, format: email, example: ivan@example.com }
+        lastName: { type: string, example: Король }
+        phone: { type: string, example: '+380 67 123 45 67' }
+        city: { type: string, example: Київ }
+        postOffice: { type: string, example: '12' }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    UserUpdate:
+      type: object
+      minProperties: 1
+      additionalProperties: false
+      properties:
+        name: { type: string, minLength: 2, maxLength: 32 }
+        lastName: { type: string, minLength: 2, maxLength: 32 }
+        phone: { type: string, pattern: '^\+?[\d\s()-]{10,20}$', example: '+380 67 123 45 67' }
+        city: { type: string, minLength: 2, maxLength: 64 }
+        postOffice: { type: string, minLength: 1, maxLength: 64 }
+
+    RegisterRequest:
+      type: object
+      required: [name, email, password]
+      properties:
+        name: { type: string, maxLength: 32 }
+        email: { type: string, format: email, maxLength: 64 }
+        password: { type: string, minLength: 8, maxLength: 128 }
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string }
+
+    OrderItem:
+      type: object
+      properties:
+        good: { $ref: '#/components/schemas/ObjectId' }
+        size: { type: string, enum: [XXS, XS, S, M, L, XL, XXL] }
+        quantity: { type: integer, minimum: 1 }
+
+    OrderCreate:
+      type: object
+      required: [items, firstName, lastName, phone, city, postOffice]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/OrderItem' }
+        firstName: { type: string }
+        lastName: { type: string }
+        phone: { type: string }
+        city: { type: string }
+        postOffice: { type: string }
+        comment: { type: string }
+
+    Order:
+      allOf:
+        - $ref: '#/components/schemas/OrderCreate'
+        - type: object
+          properties:
+            _id: { $ref: '#/components/schemas/ObjectId' }
+            number: { type: string, example: '1000123' }
+            total: { type: number, example: 2998 }
+            status: { type: string, example: pending }
+            createdAt: { type: string, format: date-time }
+
+    OrderStatusUpdate:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string, example: completed }
