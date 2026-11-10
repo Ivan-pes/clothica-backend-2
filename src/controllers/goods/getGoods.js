@@ -1,42 +1,31 @@
-import {GoodModel} from "../../models/good.js";
+import { GoodModel } from "../../models/good.js";
 
-export const getGoods = async (req, res) => {
-    const{page = 1, perPage = 12, category, size, price, minPrice, maxPrice, gender} = req.query;
+export const getGoods = async (req, res, next) => {
+  try {
+    const { page, perPage, category, size, minPrice, maxPrice, gender } =
+      req.query;
+    const skip = (page - 1) * perPage;
 
-    const limit = [8,12].includes(Number(perPage)) ? Number(perPage) : 12;
-    const skip = (Number(page) - 1) * limit;
-  const goodsQuery = GoodModel.find();
-
-if(category) {
-    goodsQuery.where('category').equals(category);
-}
-if(size) {
-    goodsQuery.where('size').equals(size);
-}
-if(price) {
-    goodsQuery.where('price.value').gte(Number(price));
-} else {
-    if(minPrice) {
-        goodsQuery.where('price.value').gte(Number(minPrice));
+    const filter = {};
+    if (category) filter.category = category;
+    if (size) filter.size = { $in: size.split(",") };
+    if (gender) filter.gender = gender;
+    if (minPrice !== undefined || maxPrice !== undefined) {
+      filter["price.value"] = {};
+      if (minPrice !== undefined) filter["price.value"].$gte = minPrice;
+      if (maxPrice !== undefined) filter["price.value"].$lte = maxPrice;
     }
-    if(maxPrice) {
-        goodsQuery.where('price.value').lte(Number(maxPrice));
-    }
-}
 
-if(gender) {
-    goodsQuery.where('gender').equals(gender);
-}
+    const goodsQuery = GoodModel.find(filter);
+    const [totalItems, goods] = await Promise.all([
+      goodsQuery.clone().countDocuments(),
+      goodsQuery.sort({ _id: -1 }).skip(skip).limit(perPage),
+    ]);
 
-const [totalItems, goods] = await Promise.all([
-    goodsQuery.clone().countDocuments(),
-    goodsQuery.skip(skip).limit(limit)
-]);
-const totalPages = Math.ceil(totalItems / limit);
-    res.status(200).json({ 
-        page: Number(page), 
-        perPage: limit, 
-        totalItems,
-        totalPages, 
-        goods,  });
-}
+    const totalPages = Math.ceil(totalItems / perPage);
+
+    res.status(200).json({ page, perPage, totalItems, totalPages, goods });
+  } catch (error) {
+    next(error);
+  }
+};
