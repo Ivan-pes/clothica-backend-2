@@ -1,43 +1,32 @@
 import createHttpError from "http-errors";
-
 import { isValidObjectId } from "mongoose";
-import { SessionModel } from "../models/session.js";
+import { Session } from "../models/session.js";
 import { UserModel } from "../models/user.js";
 
 export const authenticate = async (req, res, next) => {
-  try {
-    const { sessionId, accessToken } = req.cookies ?? {};
+  const { accessToken, sessionId } = req.cookies ?? {};
 
-    if (!sessionId || !accessToken) {
-      throw createHttpError(401, "Missing session credentials");
-    }
-
-    if (!isValidObjectId(sessionId)) {
-      throw createHttpError(401, "Invalid session ID");
-    }
-    const session = await SessionModel.findOne({
-      _id: sessionId,
-      accessToken,
-    });
-
-    if (!session) {
-      throw createHttpError(401, "Session not found");
-    }
-
-    if (session.accessTokenValidUntil <= new Date()) {
-      throw createHttpError(401, "Access token expired");
-    }
-
-    const user = await UserModel.findById(session.userId);
-
-    if (!user) {
-      throw createHttpError(401, "User not found");
-    }
-
-    req.user = user;
-
-    next();
-  } catch (error) {
-    next(error);
+  if (!accessToken) {
+    throw createHttpError(401, "Missing access token");
   }
+  if (!sessionId || !isValidObjectId(sessionId)) {
+    throw createHttpError(401, "Session not found");
+  }
+
+  const session = await Session.findOne({ accessToken, _id: sessionId });
+  if (!session) {
+    throw createHttpError(401, "Session not found");
+  }
+
+  if (session.accessTokenValidUntil.getTime() <= Date.now()) {
+    throw createHttpError(401, "Access token expired");
+  }
+
+  const user = await UserModel.findById(session.userId);
+
+  if (!user) {
+    throw createHttpError(401);
+  }
+  req.user = user;
+  next();
 };
