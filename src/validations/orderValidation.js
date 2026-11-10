@@ -1,5 +1,5 @@
-import { Joi, Segments } from 'celebrate';
-import { SIZES } from '../constants/goods.js';
+import { Joi, Segments } from "celebrate";
+import { SIZES } from "../constants/goods.js";
 
 export const createOrderSchema = {
   [Segments.BODY]: Joi.object({
@@ -21,9 +21,9 @@ export const createOrderSchema = {
       .trim()
       .pattern(/^\+?[\d\s()-]{10,20}$/)
       .required()
-      .messages({ 'string.pattern.base': 'Невірний формат номера телефону' }),
+      .messages({ "string.pattern.base": "Невірний формат номера телефону" }),
     city: Joi.string().trim().min(2).max(64).required(),
     postOffice: Joi.string().trim().min(1).max(64).required(),
-    comment: Joi.string().trim().max(500).allow(''),
+    comment: Joi.string().trim().max(500).allow(""),
   }),
 };

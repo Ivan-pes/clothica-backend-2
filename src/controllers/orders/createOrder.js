@@ -17,7 +17,6 @@ export const createOrder = async (req, res, next) => {
     const { items, firstName, lastName, phone, city, postOffice, comment } =
       req.body;
 
-    // Отримуємо ID користувача із сесії (якщо він залогінений)
     const userId = await getUserIdFromSession(req);
 
     const goods = await GoodModel.find({
