@@ -177,7 +177,7 @@ paths:
     post:
       tags: [Orders]
       summary: Оформлення замовлення
-      description: В розробці.
+      description: Публічне оформлення замовлення. Ціна розраховується за актуальними цінами товарів.
       requestBody:
         required: true
         content:
@@ -190,6 +190,7 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Order' }
         '400': { $ref: '#/components/responses/ValidationError' }
+        '404': { $ref: '#/components/responses/NotFound' }
     get:
       tags: [Orders]
       summary: Усі замовлення поточного користувача
@@ -506,9 +507,17 @@ components:
         - type: object
           properties:
             _id: { $ref: '#/components/schemas/ObjectId' }
-            number: { type: string, example: '1000123' }
+            number: { type: string, description: Унікальний ідентифікатор замовлення }
             total: { type: number, example: 2998 }
             status: { type: string, example: pending }
+            items:
+              type: array
+              items:
+                allOf:
+                  - $ref: '#/components/schemas/OrderItem'
+                  - type: object
+                    properties:
+                      price: { type: number, description: Ціна одиниці товару на момент замовлення }
             createdAt: { type: string, format: date-time }
 
     OrderStatusUpdate:
