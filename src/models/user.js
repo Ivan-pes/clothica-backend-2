@@ -1,37 +1,36 @@
-import { Schema, model } from "mongoose";
+import { Schema, model } from 'mongoose';
 
 const userSchema = new Schema(
   {
-    name: {
-      type: String,
-      trim: true,
-      required: true,
-      minlength: 3,
-      maxlength: 32,
-    },
-
-    phone: {
+    name: { type: String, trim: true, maxlength: 32 },
+    email: {
       type: String,
       required: true,
-      trim: true,
       unique: true,
+      lowercase: true,
+      trim: true,
+      maxlength: 64,
     },
-    password: {
-      type: String,
-      required: true,
-      select: false,
-    },
+    password: { type: String, required: true, minlength: 8, maxlength: 128 },
+    lastName: { type: String, trim: true, maxlength: 32, default: '' },
+    phone: { type: String, trim: true, default: '' },
+    city: { type: String, trim: true, maxlength: 64, default: '' },
+    postOffice: { type: String, trim: true, maxlength: 64, default: '' },
   },
-  {
-    timestamps: true,
-  },
+  { timestamps: true, versionKey: false },
 );
 
-userSchema.set("toJSON", {
-  transform(doc, ret) {
-    delete ret.password;
-    return ret;
-  },
+// If registration does not send a name, use the part of the email before "@".
+userSchema.pre('validate', function () {
+  if (!this.name && this.email) {
+    this.name = this.email.split('@')[0].slice(0, 32);
+  }
 });
 
-export const UserModel = model("user", userSchema);
+userSchema.methods.toJSON = function () {
+  const user = this.toObject();
+  delete user.password;
+  return user;
+};
+
+export const UserModel = model('user', userSchema);
