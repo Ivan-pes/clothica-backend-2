@@ -11,6 +11,16 @@ export const registerUserSchema = {
   }),
 };
 
+export const loginUserSchema = {
+  [Segments.BODY]: Joi.object({
+    phone: Joi.string()
+      .trim()
+      .pattern(/^\+38\d{10}$/)
+      .required(),
+    password: Joi.string().required(),
+  }),
+};
+
 export const updateCurrentUserSchema = {
   [Segments.BODY]: Joi.object({
     name: Joi.string().trim().min(2).max(32),
