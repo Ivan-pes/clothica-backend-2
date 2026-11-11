@@ -1,4 +1,8 @@
-// TODO: перевірити, що користувач має роль admin. Поки що пропускає всіх.
+import createHttpError from 'http-errors';
+
 export const requireAdmin = (req, res, next) => {
-    next();
+  if (req.user?.role !== 'admin') {
+    throw createHttpError(403, 'Access denied. Admins only');
+  }
+  next();
 };

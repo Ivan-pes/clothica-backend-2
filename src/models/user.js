@@ -24,6 +24,7 @@ const userSchema = new Schema(
     lastName: { type: String, trim: true, maxlength: 32, default: '' },
     city: { type: String, trim: true, maxlength: 64, default: '' },
     postOffice: { type: String, trim: true, maxlength: 64, default: '' },
+    role: { type: String, enum: ['user', 'admin'], default: 'user' },
   },
   { timestamps: true, versionKey: false },
 );

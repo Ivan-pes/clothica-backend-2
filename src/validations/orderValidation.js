@@ -1,5 +1,6 @@
 import { Joi, Segments } from "celebrate";
 import { SIZES } from "../constants/goods.js";
+import { ORDER_STATUSES } from "../constants/orders.js";
 
 export const createOrderSchema = {
   [Segments.BODY]: Joi.object({
@@ -25,5 +26,16 @@ export const createOrderSchema = {
     city: Joi.string().trim().min(2).max(64).required(),
     postOffice: Joi.string().trim().min(1).max(64).required(),
     comment: Joi.string().trim().max(500).allow(""),
+  }),
+};
+
+export const updateOrderStatusSchema = {
+  [Segments.PARAMS]: Joi.object({
+    orderId: Joi.string().hex().length(24).required(),
+  }),
+  [Segments.BODY]: Joi.object({
+    status: Joi.string()
+      .valid(...ORDER_STATUSES)
+      .required(),
   }),
 };
