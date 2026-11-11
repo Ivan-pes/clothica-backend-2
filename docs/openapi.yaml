@@ -211,7 +211,7 @@ paths:
     patch:
       tags: [Orders]
       summary: Зміна статусу замовлення (admin)
-      description: В розробці.
+      description: Доступно лише користувачу з роллю admin.
       security:
         - cookieAuth: []
       parameters:
@@ -524,4 +524,7 @@ components:
       type: object
       required: [status]
       properties:
-        status: { type: string, example: completed }
+        status:
+          type: string
+          enum: [pending, processing, completed, cancelled]
+          example: completed

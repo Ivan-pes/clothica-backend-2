@@ -1,5 +1,6 @@
 import { Schema, model } from "mongoose";
 import { SIZES } from "../constants/goods.js";
+import { ORDER_STATUSES } from "../constants/orders.js";
 
 const orderSchema = new Schema(
   {
@@ -19,7 +20,12 @@ const orderSchema = new Schema(
     comment: { type: String, trim: true, default: "" },
     number: { type: String, required: true, unique: true },
     total: { type: Number, min: 0, required: true },
-    status: { type: String, default: "pending", required: true },
+    status: {
+      type: String,
+      enum: ORDER_STATUSES,
+      default: "pending",
+      required: true,
+    },
     user: { type: Schema.Types.ObjectId, ref: "user", default: null },
   },
   {
