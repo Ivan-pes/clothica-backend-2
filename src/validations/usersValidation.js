@@ -1,4 +1,25 @@
-import { Joi, Segments } from 'celebrate';
+import { Joi, Segments } from "celebrate";
+
+export const registerUserSchema = {
+  [Segments.BODY]: Joi.object({
+    name: Joi.string().trim().min(2).max(32).required(),
+    phone: Joi.string()
+      .trim()
+      .pattern(/^\+38\d{10}$/)
+      .required(),
+    password: Joi.string().min(8).max(128).required(),
+  }),
+};
+
+export const loginUserSchema = {
+  [Segments.BODY]: Joi.object({
+    phone: Joi.string()
+      .trim()
+      .pattern(/^\+38\d{10}$/)
+      .required(),
+    password: Joi.string().required(),
+  }),
+};
 
 export const updateCurrentUserSchema = {
   [Segments.BODY]: Joi.object({
@@ -7,7 +28,7 @@ export const updateCurrentUserSchema = {
     phone: Joi.string()
       .trim()
       .pattern(/^\+?[\d\s()-]{10,20}$/)
-      .messages({ 'string.pattern.base': 'Невірний формат номера телефону' }),
+      .messages({ "string.pattern.base": "Невірний формат номера телефону" }),
     city: Joi.string().trim().min(2).max(64),
     postOffice: Joi.string().trim().min(1).max(64),
   }).min(1),
