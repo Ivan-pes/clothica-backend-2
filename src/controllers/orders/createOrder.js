@@ -4,10 +4,19 @@ import { GoodModel } from "../../models/good.js";
 import { OrderModel } from "../../models/order.js";
 import { Session } from "../../models/session.js";
 
-const getUserIdFromSession = async (req) => {
+const findSession = (req) => {
   const { accessToken, sessionId } = req.cookies ?? {};
-  if (!accessToken || !isValidObjectId(sessionId)) return null;
-  const session = await Session.findOne({ _id: sessionId, accessToken });
+  if (accessToken) {
+    if (!isValidObjectId(sessionId)) return null;
+    return Session.findOne({ _id: sessionId, accessToken });
+  }
+  const [type, token] = req.headers.authorization?.split(" ") ?? [];
+  if (type !== "Bearer" || !token) return null;
+  return Session.findOne({ accessToken: token });
+};
+
+const getUserIdFromSession = async (req) => {
+  const session = await findSession(req);
   if (!session || session.accessTokenValidUntil <= new Date()) return null;
   return session.userId;
 };
