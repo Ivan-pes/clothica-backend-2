@@ -3,7 +3,7 @@ import { Feedback } from '../../models/feedback.js';
 export const getFeedbacks = async (req, res, next) => {
     try {
         const feedbacks = await Feedback.find()
-            .sort({ createdAt: -1 })
+            .sort({ date: -1 })
             .limit(10)
             .populate('productId', 'name');
         
