@@ -467,10 +467,10 @@ components:
 
     RegisterRequest:
       type: object
-      required: [name, email, password]
+      required: [name, phone, password]
       properties:
         name: { type: string, maxLength: 32 }
-        email: { type: string, format: email, maxLength: 64 }
+        phone: { type: string, pattern: '^\+38\d{10}$', example: '+380671234567' }
         password: { type: string, minLength: 8, maxLength: 128 }
 
     LoginRequest:
